@@ -74,15 +74,6 @@ async function executeToolUse(
   return toolResult;
 }
 
-function isToolUseInResponse(
-  response: Anthropic.Messages.MessageParam,
-): boolean {
-  if (typeof response.content === "string") {
-    return false;
-  }
-  return response.content.some((content) => content.type === "tool_use");
-}
-
 async function main() {
   let turns = 0;
   const anthropic = new Anthropic();
@@ -105,9 +96,17 @@ async function main() {
     console.log("--------------------------------");
     messages.push({ role: response0.role, content: response0.content });
 
-    if (!isToolUseInResponse(response0)) {
+    if (
+      response0.stop_reason === "end_turn" ||
+      response0.stop_reason === "stop_sequence"
+    ) {
       break;
     }
+
+    assert(
+      response0.stop_reason === "tool_use",
+      "Expected tool use in content",
+    );
 
     const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
 
@@ -123,7 +122,7 @@ async function main() {
     turns++;
   }
 
-  console.log("Final messages:", messages);
+  // console.log("Final messages:", messages);
 }
 
 main().catch(console.error);
