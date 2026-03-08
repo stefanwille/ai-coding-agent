@@ -18,6 +18,25 @@ const tools = [
   },
 ];
 
+const get_weather = async (location: string): Promise<string> => {
+  return "Very hot and dry, at 52 degrees Celsius.";
+};
+
+const executeToolUse = async (
+  toolUse: Anthropic.Messages.ToolUseBlockParam,
+): Promise<Anthropic.Messages.ToolResultBlockParam> => {
+  const toolName = toolUse.name;
+  assert(toolName === "get_weather", "Expected tool name to be get_weather");
+  const toolInput = toolUse.input as { location: string };
+  const toolResponse = await get_weather(toolInput.location);
+  const toolResult: Anthropic.Messages.ToolResultBlockParam = {
+    type: "tool_result" as const,
+    tool_use_id: toolUse.id,
+    content: toolResponse,
+  };
+  return toolResult;
+};
+
 async function main() {
   const anthropic = new Anthropic();
   const messages: Anthropic.Messages.MessageParam[] = [];
@@ -34,24 +53,18 @@ async function main() {
   });
   console.log("response 0:", response0);
   console.log("--------------------------------");
-
-  const toolUse = response0.content.find((c) => c.type === "tool_use");
-  assert(toolUse?.type === "tool_use", `Expected tool use - ${toolUse?.type}}`);
-  const toolName = toolUse.name;
-  assert(toolName === "get_weather", "Expected tool name to be get_weather");
-
   messages.push({ role: response0.role, content: response0.content });
 
-  const toolResult: Anthropic.Messages.ToolResultBlockParam = {
-    type: "tool_result" as const,
-    tool_use_id: toolUse.id,
-    content: "Very hot and dry, at 57 degrees Celsius.",
-  };
+  const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
 
-  messages.push({
-    role: "user" as const,
-    content: [toolResult],
-  });
+  for (const content of response0.content) {
+    if (content.type === "tool_use") {
+      const toolResult = await executeToolUse(content);
+      toolResults.push(toolResult);
+    }
+  }
+  messages.push({ role: "user", content: toolResults });
+
   const response1 = await anthropic.messages.create({
     model: "claude-opus-4-6",
     max_tokens: 1000,
