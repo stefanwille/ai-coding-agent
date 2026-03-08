@@ -74,7 +74,17 @@ async function executeToolUse(
   return toolResult;
 }
 
+function isToolUseInResponse(
+  response: Anthropic.Messages.MessageParam,
+): boolean {
+  if (typeof response.content === "string") {
+    return false;
+  }
+  return response.content.some((content) => content.type === "tool_use");
+}
+
 async function main() {
+  let turns = 0;
   const anthropic = new Anthropic();
   const messages: Anthropic.Messages.MessageParam[] = [];
 
@@ -83,33 +93,37 @@ async function main() {
     content:
       "Get the user's location and the current weather in that location.",
   });
-  const response0 = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: 1000,
-    tools: tools,
-    messages,
-  });
-  console.log("response 0:", response0);
-  console.log("--------------------------------");
-  messages.push({ role: response0.role, content: response0.content });
 
-  const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
+  while (turns < 10) {
+    const response0 = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 1000,
+      tools: tools,
+      messages,
+    });
+    console.log("response 0:", response0);
+    console.log("--------------------------------");
+    messages.push({ role: response0.role, content: response0.content });
 
-  for (const content of response0.content) {
-    if (content.type === "tool_use") {
-      const toolResult = await executeToolUse(content);
-      toolResults.push(toolResult);
+    if (!isToolUseInResponse(response0)) {
+      break;
     }
-  }
-  messages.push({ role: "user", content: toolResults });
 
-  const response1 = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: 1000,
-    tools: tools,
-    messages,
-  });
-  console.log("response 1:", response1);
+    const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
+
+    for (const content of response0.content) {
+      if (content.type === "tool_use") {
+        const toolResult = await executeToolUse(content);
+        toolResults.push(toolResult);
+      }
+    }
+
+    messages.push({ role: "user", content: toolResults });
+
+    turns++;
+  }
+
+  console.log("Final messages:", messages);
 }
 
 main().catch(console.error);
