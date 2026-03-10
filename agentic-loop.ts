@@ -45,7 +45,8 @@ async function agentRequest(request: string, session: AgentSession) {
       content: request,
     });
 
-    for (let turns = 0; turns < session.maxTurns; turns++) {
+    let turns;
+    for (turns = 0; turns < session.maxTurns; turns++) {
       let response: Anthropic.Messages.Message;
       try {
         response = await anthropic.messages.create({
@@ -84,7 +85,7 @@ async function agentRequest(request: string, session: AgentSession) {
         case "stop_sequence":
           console.log("Stop sequence reached, stopping conversation");
           return;
-        case "tool_use":
+        case "tool_use": {
           const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
           for (const block of response.content) {
             if (block.type === "tool_use") {
@@ -94,6 +95,7 @@ async function agentRequest(request: string, session: AgentSession) {
           session.messages.push({ role: "user", content: toolResults });
           // Continue looping to allow the LLM to process the tool results
           break;
+        }
         case "pause_turn":
           // We paused a long-running turn. You may provide the response back as-is in a subsequent request to let the model continue.
           console.log("Paused turn");
@@ -108,6 +110,12 @@ async function agentRequest(request: string, session: AgentSession) {
           );
           return;
       }
+    }
+
+    if (turns >= session.maxTurns) {
+      console.log(
+        `Reached maximum number of turns (${session.maxTurns}), stopping.`,
+      );
     }
   } finally {
     // Claude API requires that messages strictly alternate between user and assistant messages.
@@ -141,9 +149,10 @@ function createREPL(history: string[]): {
   function promptUser(prompt: string) {
     return new Promise<string | null>((resolve) => {
       if (closed) return resolve(null);
-      readline.once("close", () => resolve(null));
+      const onClose = () => resolve(null);
+      readline.once("close", onClose);
       readline.question(prompt, (answer) => {
-        readline.removeAllListeners("close");
+        readline.removeListener("close", onClose);
         resolve(answer);
       });
     });
