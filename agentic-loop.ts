@@ -37,7 +37,11 @@ async function executeToolUse(
         content: `Unknown tool name: ${toolUse.name}`,
       };
     }
-    result = await tool.jsFunction(toolUse.input);
+    try {
+      result = await tool.jsFunction(toolUse.input);
+    } catch (err) {
+      result = `Error calling tool ${toolUse.name}: ${(err as Error).message}`;
+    }
   }
 
   const resultStr =

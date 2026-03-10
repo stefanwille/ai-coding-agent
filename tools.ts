@@ -42,29 +42,4 @@ const get_weather: Tool = {
   },
 };
 
-const readFileSchema = type({
-  path: "string",
-});
-
-const read_file: Tool = {
-  name: "read_file",
-  description:
-    "Reads a file from the file system and returns an optional error_message and the file_content if successful",
-  inputSchema: readFileSchema,
-  jsFunction: async ({ path }: typeof readFileSchema.infer) => {
-    console.log(`Reading file from ${path}`);
-    if (path.includes("..") || path.startsWith("/")) {
-      return JSON.stringify({ error_message: "Bad path given" });
-    }
-    try {
-      const content = await Bun.file(path).text();
-      return JSON.stringify({ file_content: content });
-    } catch (e) {
-      return JSON.stringify({
-        error_message: `Failed to read file: ${e instanceof Error ? e.message : e}`,
-      });
-    }
-  },
-};
-
 export const TOOLS: Tool[] = [get_location, get_weather];
