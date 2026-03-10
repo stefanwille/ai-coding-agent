@@ -12,7 +12,7 @@ export type Tool = {
   type?: Anthropic.Messages.ToolUnion["type"];
 };
 
-export const get_location: Tool = {
+const get_location: Tool = {
   name: "get_location",
   description: "Get the user's location",
   inputSchema: type({}),
@@ -26,7 +26,7 @@ const getWeatherSchema = type({
   location: "string",
 });
 
-export const get_weather: Tool = {
+const get_weather: Tool = {
   name: "get_weather",
   description: "Get the current weather in a given location",
   inputSchema: getWeatherSchema,
@@ -46,7 +46,7 @@ const readFileSchema = type({
   path: "string",
 });
 
-export const read_file: Tool = {
+const read_file: Tool = {
   name: "read_file",
   description:
     "Reads a file from the file system and returns an optional error_message and the file_content if successful",

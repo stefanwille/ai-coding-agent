@@ -1,17 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createInterface } from "node:readline";
-import { BashSession, type BashToolInput } from "./BashTool";
-import {
-  type Tool,
-  type ToolResult,
-  get_location,
-  get_weather,
-  read_file,
-  TOOLS,
-} from "./tools";
-import { renderMarkdown, renderToolFrame } from "./render-markdown";
-import { loadHistory, saveHistory } from "./history";
 import { createAgentSession, type AgentSession } from "./agent-session";
+import { type BashToolInput } from "./BashTool";
+import { loadHistory, saveHistory } from "./history";
+import { renderMarkdown, renderToolFrame } from "./render-markdown";
+import { TOOLS, type ToolResult } from "./tools";
 
 const MODEL = "claude-haiku-4-5";
 
@@ -132,10 +125,10 @@ async function main() {
   for (;;) {
     const line = await ask("> ");
     if (line === null) {
-      await saveHistory(getHistory());
       break;
     }
     if (!line) continue;
+    await saveHistory(getHistory());
 
     session.messages = await agentRequest(line, session);
 
