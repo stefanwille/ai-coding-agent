@@ -7,77 +7,19 @@ import {
   get_location,
   get_weather,
   read_file,
+  tools,
 } from "./tools";
 import { renderMarkdown, renderToolFrame } from "./render-markdown";
+import { loadHistory, saveHistory } from "./history";
+import { createAgentSession, type AgentSession } from "./agent-session";
 
 const MODEL = "claude-haiku-4-5";
-const HISTORY_FILE = "history.txt";
-const MAX_HISTORY_LINES = 200;
-
-async function loadSystemPrompt(): Promise<string> {
-  const prompts: string[] = [];
-
-  // Load ~/.claude/CLAUDE.md
-  try {
-    const homeDir = Bun.env.HOME || Bun.env.USERPROFILE;
-    if (homeDir) {
-      const globalFile = Bun.file(`${homeDir}/.claude/CLAUDE.md`);
-      if (await globalFile.exists()) {
-        prompts.push(await globalFile.text());
-      }
-    }
-  } catch {}
-
-  // Load ./CLAUDE.md (current working directory)
-  try {
-    const file = Bun.file("CLAUDE.md");
-    if (await file.exists()) {
-      prompts.push(await file.text());
-    }
-  } catch {}
-
-  return prompts.join("\n\n");
-}
-
-async function loadHistory(): Promise<string[]> {
-  try {
-    const file = Bun.file(HISTORY_FILE);
-    if (await file.exists()) {
-      const text = await file.text();
-      return text.split("\n").filter(Boolean).slice(-MAX_HISTORY_LINES);
-    }
-  } catch {}
-  return [];
-}
-
-async function saveHistory(lines: string[]) {
-  const recentLines = lines.slice(-MAX_HISTORY_LINES);
-  const existing = await Bun.file(HISTORY_FILE).exists()
-    ? (await Bun.file(HISTORY_FILE).text()).trim()
-    : "";
-  const updated = existing
-    ? existing + "\n" + recentLines.join("\n")
-    : recentLines.join("\n");
-  await Bun.write(HISTORY_FILE, updated + "\n");
-}
-
-const tools: Tool[] = [get_location, get_weather, read_file];
-
-function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
-  const convertedTools: Anthropic.Messages.ToolUnion[] = tools.map((tool) => ({
-    name: tool.name,
-    description: tool.description,
-    input_schema: tool.inputSchema.toJsonSchema() as any,
-  }));
-  convertedTools.push({ type: "bash_20250124", name: "bash" });
-  return convertedTools;
-}
 
 const anthropic = new Anthropic();
-const bashSession = new BashSession();
 
 async function executeToolUse(
   toolUse: Anthropic.Messages.ToolUseBlockParam,
+  session: AgentSession,
 ): Promise<Anthropic.Messages.ToolResultBlockParam> {
   let result: ToolResult;
 
@@ -85,10 +27,10 @@ async function executeToolUse(
     const input = toolUse.input as BashToolInput;
     try {
       if (input.restart) {
-        bashSession.restart();
+        session.bashSession.restart();
         result = "Bash baseSession restarted.";
       } else {
-        result = await bashSession.run(input.command, input.timeout);
+        result = await session.bashSession.run(input.command, input.timeout);
       }
     } catch (err) {
       result = `Error: ${(err as Error).message}`;
@@ -116,28 +58,22 @@ async function executeToolUse(
   };
 }
 
-type AgentRequest = {
-  messages: Anthropic.Messages.MessageParam[];
-  system?: string;
-  tools: Anthropic.Messages.ToolUnion[];
-  max_tokens: number;
-  max_turns: number;
-  model: string;
-};
-
-async function agentRequest(request: AgentRequest) {
+async function agentRequest(line: string, session: AgentSession) {
   let turns = 0;
-  const messages: Anthropic.Messages.MessageParam[] = [...request.messages];
+  session.messages.push({
+    role: "user",
+    content: line,
+  });
 
-  while (turns < request.max_turns) {
+  while (turns < session.max_turns) {
     const response = await anthropic.messages.create({
-      model: request.model,
-      max_tokens: request.max_tokens,
-      system: request.system || undefined,
-      tools: request.tools,
-      messages,
+      model: session.model,
+      max_tokens: session.max_tokens,
+      system: session.system || undefined,
+      tools: session.tools,
+      messages: session.messages,
     });
-    messages.push({ role: response.role, content: response.content });
+    session.messages.push({ role: response.role, content: response.content });
 
     if (response.stop_reason !== "tool_use") {
       break;
@@ -148,14 +84,14 @@ async function agentRequest(request: AgentRequest) {
     );
     const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
     for (const toolUse of toolUses) {
-      toolResults.push(await executeToolUse(toolUse));
+      toolResults.push(await executeToolUse(toolUse, session));
     }
 
-    messages.push({ role: "user", content: toolResults });
+    session.messages.push({ role: "user", content: toolResults });
 
     turns++;
   }
-  return messages;
+  return session.messages;
 }
 
 function createPrompt(history: string[]): {
@@ -189,10 +125,8 @@ function createPrompt(history: string[]): {
 }
 
 async function main() {
-  const anthropicTools = convertTools(tools);
-  const systemPrompt = await loadSystemPrompt();
-  let messages: Anthropic.Messages.MessageParam[] = [];
   const history = await loadHistory();
+  const session = await createAgentSession(MODEL);
   const { ask, getHistory } = createPrompt(history);
 
   for (;;) {
@@ -203,21 +137,9 @@ async function main() {
     }
     if (!line) continue;
 
-    messages.push({
-      role: "user",
-      content: line,
-    });
+    session.messages = await agentRequest(line, session);
 
-    messages = await agentRequest({
-      messages,
-      system: systemPrompt,
-      tools: anthropicTools,
-      max_tokens: 8192,
-      max_turns: 10,
-      model: MODEL,
-    });
-
-    const lastContent = messages.at(-1)!.content;
+    const lastContent = session.messages.at(-1)!.content;
     if (Array.isArray(lastContent)) {
       for (const block of lastContent) {
         if (block.type === "text") {
