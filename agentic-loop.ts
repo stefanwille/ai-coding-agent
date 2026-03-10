@@ -52,13 +52,13 @@ async function executeToolUse(
 }
 
 async function agentRequest(line: string, session: AgentSession) {
-  let turns = 0;
   session.messages.push({
     role: "user",
     content: line,
   });
 
-  while (turns < session.max_turns) {
+  let looping = true;
+  for (let turns = 0; turns < session.max_turns && looping; turns++) {
     const response = await anthropic.messages.create({
       model: session.model,
       max_tokens: session.max_tokens,
@@ -68,21 +68,55 @@ async function agentRequest(line: string, session: AgentSession) {
     });
     session.messages.push({ role: response.role, content: response.content });
 
-    if (response.stop_reason !== "tool_use") {
-      break;
+    for (const block of response.content) {
+      if (block.type === "text") {
+        console.log(renderMarkdown(block.text));
+      }
     }
 
-    const toolUses = response.content.filter(
-      (c): c is Anthropic.Messages.ToolUseBlock => c.type === "tool_use",
-    );
-    const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
-    for (const toolUse of toolUses) {
-      toolResults.push(await executeToolUse(toolUse, session));
+    switch (response.stop_reason) {
+      case "end_turn":
+        looping = false;
+        break;
+      case "max_tokens":
+        console.log(
+          "We exceeded the requested max_tokens or the model's maximum, stopping conversation",
+        );
+        looping = false;
+        break;
+      case "stop_sequence":
+        console.log("Stop sequence reached, stopping conversation");
+        looping = false;
+        break;
+      case "tool_use":
+        const toolUses = response.content.filter(
+          (c): c is Anthropic.Messages.ToolUseBlock => c.type === "tool_use",
+        );
+        const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
+        for (const toolUse of toolUses) {
+          toolResults.push(await executeToolUse(toolUse, session));
+        }
+        session.messages.push({ role: "user", content: toolResults });
+        // Continue looping to process the next tool use
+        looping = true;
+        break;
+      case "pause_turn":
+        // We paused a long-running turn. You may provide the response back as-is in a subsequent request to let the model continue.
+        console.log("Paused turn, stopping conversation");
+        looping = false;
+        break;
+      case "refusal":
+        // When streaming classifiers intervene to handle potential policy violations
+        console.log("Refusal, stopping conversation");
+        looping = false;
+        break;
+      default:
+        console.log(
+          `Unknown stop reason ${response.stop_reason}, stopping conversation`,
+        );
+        looping = false;
+        break;
     }
-
-    session.messages.push({ role: "user", content: toolResults });
-
-    turns++;
   }
 }
 
@@ -132,17 +166,7 @@ async function main() {
     }
     if (!line) continue;
     await saveHistory(getHistory());
-
     await agentRequest(line, session);
-
-    const lastContent = session.messages.at(-1)!.content;
-    if (Array.isArray(lastContent)) {
-      for (const block of lastContent) {
-        if (block.type === "text") {
-          console.log(renderMarkdown(block.text));
-        }
-      }
-    }
   }
 
   process.exit(0);
