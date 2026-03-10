@@ -42,6 +42,10 @@ const get_weather: Tool = {
   },
 };
 
+type BashToolInput =
+  | { command: string; timeout?: number; restart?: never }
+  | { restart: true; command?: never; timeout?: never };
+
 export function bash(bashSession: BashSession): Tool {
   return {
     name: "bash",

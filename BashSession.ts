@@ -1,17 +1,11 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "child_process";
 
-export type BashToolInput =
-  | { command: string; timeout?: number; restart?: never }
-  | { restart: true; command?: never; timeout?: never };
-
 export class BashSession {
-  private process: ChildProcessWithoutNullStreams;
+  private process: ChildProcessWithoutNullStreams = this.createBashProcess();
   private outputBuffer = "";
   private readonly SENTINEL = `DONE_${crypto.randomUUID().replace(/-/g, "")}`;
 
-  public constructor() {
-    this.process = this.createBashProcess();
-  }
+  public constructor() {}
 
   public async run(command: string, timeoutMs = 120_000): Promise<string> {
     this.outputBuffer = "";
