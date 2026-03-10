@@ -10,6 +10,7 @@ type Tool = {
   description: string;
   inputSchema: type.Any;
   jsFunction: (input: any) => Promise<ToolResultBlockParam["content"]>;
+  type?: Anthropic.Messages.ToolUnion["type"];
 };
 
 const get_location: Tool = {
@@ -70,11 +71,13 @@ const read_file: Tool = {
 const tools: Tool[] = [get_location, get_weather, read_file];
 
 function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
-  return tools.map((tool) => ({
+  const convertedTools: Anthropic.Messages.ToolUnion[] = tools.map((tool) => ({
     name: tool.name,
     description: tool.description,
     input_schema: tool.inputSchema.toJsonSchema() as any,
   }));
+  convertedTools.push({ type: "bash_20250124", name: "bash" });
+  return convertedTools;
 }
 
 async function executeToolUse(

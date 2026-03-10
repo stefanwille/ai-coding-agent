@@ -10,12 +10,11 @@ async function main() {
       {
         role: "user",
         content:
-          "What should I search for to find the latest developments in renewable energy?"
-      }
-    ]
+          "What should I search for to find the latest developments in renewable energy?",
+      },
+    ],
   });
   console.log(msg);
 }
 
 main().catch(console.error);
-
