@@ -8,6 +8,7 @@ import {
   get_weather,
   read_file,
 } from "./tools";
+import { renderMarkdown, renderToolFrame } from "./render-markdown";
 
 const MODEL = "claude-haiku-4-5";
 
@@ -29,8 +30,6 @@ async function executeToolUse(
   toolUse: Anthropic.Messages.ToolUseBlockParam,
 ): Promise<Anthropic.Messages.ToolResultBlockParam> {
   let result: ToolResult;
-
-  console.log("Tool use", toolUse);
 
   if (toolUse.name === "bash") {
     const input = toolUse.input as BashToolInput;
@@ -59,6 +58,10 @@ async function executeToolUse(
     }
     result = await tool.jsFunction(toolUse.input);
   }
+
+  const resultStr =
+    typeof result === "string" ? result : JSON.stringify(result, null, 2);
+  console.log(renderToolFrame(toolUse.name, toolUse.input, resultStr ?? ""));
 
   return {
     type: "tool_result",
@@ -136,7 +139,16 @@ async function main() {
       model: MODEL,
     });
 
-    console.log(messages![messages!.length - 1]!.content);
+    const lastContent = messages![messages!.length - 1]!.content;
+    if (typeof lastContent === "string") {
+      console.log(renderMarkdown(lastContent));
+    } else if (Array.isArray(lastContent)) {
+      for (const block of lastContent) {
+        if (block.type === "text") {
+          console.log(renderMarkdown(block.text));
+        }
+      }
+    }
   }
 }
 
