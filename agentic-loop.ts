@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import assert from "node:assert";
+import { createInterface } from "node:readline";
 import { BashSession, type BashToolInput } from "./BashTool";
 import {
   type Tool,
@@ -109,18 +110,32 @@ async function agentRequest(request: AgentRequest) {
   return messages;
 }
 
+function createPrompt(): (prompt: string) => Promise<string | null> {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: true,
+  });
+
+  return (prompt: string) =>
+    new Promise<string | null>((resolve) => {
+      rl.once("close", () => resolve(null));
+      rl.question(prompt, (answer) => {
+        rl.removeAllListeners("close");
+        resolve(answer);
+      });
+    });
+}
+
 async function main() {
   const anthropicTools = convertTools(tools);
   let messages: Anthropic.Messages.MessageParam[] = [];
+  const ask = createPrompt();
 
   for (;;) {
-    const line = prompt("> ");
-    if (line === null) {
-      break;
-    }
-    if (!line) {
-      continue;
-    }
+    const line = await ask("> ");
+    if (line === null) break;
+    if (!line) continue;
 
     messages.push({
       role: "user",
