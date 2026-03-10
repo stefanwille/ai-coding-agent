@@ -7,7 +7,7 @@ import {
   get_location,
   get_weather,
   read_file,
-  tools,
+  TOOLS,
 } from "./tools";
 import { renderMarkdown, renderToolFrame } from "./render-markdown";
 import { loadHistory, saveHistory } from "./history";
@@ -36,7 +36,7 @@ async function executeToolUse(
       result = `Error: ${(err as Error).message}`;
     }
   } else {
-    const tool = tools.find((t) => t.name === toolUse.name);
+    const tool = TOOLS.find((t) => t.name === toolUse.name);
     if (!tool) {
       return {
         type: "tool_result",
