@@ -1,7 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createInterface } from "node:readline";
 import { createAgentSession, type AgentSession } from "./agent-session";
-import { type BashToolInput } from "./BashTool";
 import { loadHistory, saveHistory } from "./history";
 import { renderMarkdown, renderToolFrame } from "./render-markdown";
 import { type ToolResult } from "./tools";
@@ -16,32 +15,18 @@ async function executeToolUse(
 ): Promise<Anthropic.Messages.ToolResultBlockParam> {
   let result: ToolResult;
 
-  if (toolUse.name === "bash") {
-    const input = toolUse.input as BashToolInput;
-    try {
-      if (input.restart) {
-        session.bashSession.restart();
-        result = "Bash session restarted.";
-      } else {
-        result = await session.bashSession.run(input.command, input.timeout);
-      }
-    } catch (err) {
-      result = `Error: ${(err as Error).message}`;
-    }
-  } else {
-    const tool = session.tools.find((t) => t.name === toolUse.name);
-    if (!tool) {
-      return {
-        type: "tool_result",
-        tool_use_id: toolUse.id,
-        content: `Unknown tool name: ${toolUse.name}`,
-      };
-    }
-    try {
-      result = await tool.jsFunction(toolUse.input);
-    } catch (err) {
-      result = `Error calling tool ${toolUse.name}: ${(err as Error).message}`;
-    }
+  const tool = session.tools.find((t) => t.name === toolUse.name);
+  if (!tool) {
+    return {
+      type: "tool_result",
+      tool_use_id: toolUse.id,
+      content: `Unknown tool name: ${toolUse.name}`,
+    };
+  }
+  try {
+    result = await tool.run(toolUse.input);
+  } catch (err) {
+    result = `Error calling tool ${toolUse.name}: ${(err as Error).message}`;
   }
 
   const resultStr =

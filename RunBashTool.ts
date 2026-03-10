@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { BashSession } from "./BashTool";
+import { BashSession } from "./BashSession";
 
 const MODEL = "claude-haiku-4-5";
 
