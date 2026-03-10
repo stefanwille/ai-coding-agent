@@ -67,4 +67,4 @@ const read_file: Tool = {
   },
 };
 
-export const TOOLS: Tool[] = [get_location, get_weather, read_file];
+export const TOOLS: Tool[] = [get_location, get_weather];
