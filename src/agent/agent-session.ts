@@ -1,7 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { BashSession } from "./tools/bash-session";
 import { loadSystemPrompt } from "./system-prompt";
-import { convertTools, createTools, type Tool } from "./tools/tools";
+import { convertTools, createTools } from "./tools/tools";
+import type { Tool } from "./tools/tool";
 
 /**
  * Agent session models the session the user has with the agent.

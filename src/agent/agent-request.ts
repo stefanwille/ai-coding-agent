@@ -4,7 +4,7 @@ import {
   renderMarkdown,
   renderToolFrame,
 } from "./markdown-renderer/render-markdown";
-import { type ToolResult } from "./tools/tools";
+import { type ToolResult } from "./tools/tool";
 
 async function executeToolUse(
   toolUse: Anthropic.Messages.ToolUseBlockParam,
