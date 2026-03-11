@@ -1,11 +1,19 @@
 import { type } from "arktype";
-import type { ExtendedAnthropicTool } from "../../tool";
+import type { ExtendedAnthropicTool, ToolResult } from "../../tool";
 import { strReplace, StrReplaceInputSchema } from "./_str_replace";
 import { view, ViewInputSchema } from "./_view";
 
 // https://platform.claude.com/docs/en/agents-and-tools/tool-use/text-editor-tool
 
 const TextEditorInputSchema = ViewInputSchema.or(StrReplaceInputSchema);
+
+// oxlint-disable-line typescript-eslint/no-explicit-any
+type Command = (input: any) => Promise<ToolResult>;
+
+const CommandMapping: Record<string, Command> = {
+  view: view,
+  str_replace: strReplace,
+};
 
 export const textEditor: ExtendedAnthropicTool = {
   type: "text_editor_20250728",
@@ -20,13 +28,10 @@ export const textEditor: ExtendedAnthropicTool = {
       );
       return `Error: Invalid input: ${parsedInput.summary}`;
     }
-    switch (parsedInput.command) {
-      case "view":
-        return await view(parsedInput);
-      case "str_replace":
-        return await strReplace(parsedInput);
-      default:
-        return "Text editor tool called";
+    const command = CommandMapping[parsedInput.command];
+    if (!command) {
+      return `Unknown command ${parsedInput.command}`;
     }
+    return await command(parsedInput);
   },
 };
