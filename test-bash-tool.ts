@@ -1,3 +1,5 @@
+// Test the bash tool
+
 import Anthropic from "@anthropic-ai/sdk";
 import { BashSession } from "./bash-session";
 
