@@ -18,7 +18,7 @@ export function convertTools(tools: Tool[]): AnthropicTool[] {
         name: tool.name,
         description: tool.description,
         input_schema: inputSchema,
-        strict: true,
+        strict: !!inputSchema,
       };
     } else {
       // Extended Anthropic tool
