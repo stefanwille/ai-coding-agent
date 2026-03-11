@@ -1,5 +1,5 @@
 import type { BashSession } from "./bash-session";
-import type { Tool } from "./tool";
+import type { Tool } from "../tool";
 
 type BashToolInput =
   | { command: string; timeout?: number; restart?: never }

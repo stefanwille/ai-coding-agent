@@ -16,6 +16,7 @@ export function createReadlineSession(history: string[]): ReadlineSession {
   function promptUser(prompt: string): Promise<string | null> {
     return new Promise((resolve) => {
       const onClose = () => resolve(null);
+      // Handle CTRL-D (EOF)
       readline.once("close", onClose);
       readline.question(prompt).then((answer) => {
         readline.removeListener("close", onClose);
