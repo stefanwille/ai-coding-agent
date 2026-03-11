@@ -25,7 +25,7 @@ bun run typecheck              # Type-check without emitting
 
 ## Validation Commands
 
-Run these commands to verify the project is clean state.
+Run these commands to verify the project is in clean state.
 
 - bun run format
 - bun run lint
