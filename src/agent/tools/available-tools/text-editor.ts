@@ -16,36 +16,41 @@ const ViewInputSchema = type({
   "+": "reject",
 });
 
+type ViewInput = typeof ViewInputSchema.infer;
+
 const TextEditorInputSchema = ViewInputSchema;
 
-async function isDirectory(path: string): Promise<boolean> {
+async function fileType(
+  path: string,
+): Promise<"directory" | "file" | "not_found"> {
+  let stats;
   try {
-    const stats = await stat(path);
-    return stats.isDirectory();
+    stats = await stat(path);
   } catch {
-    return false; // path doesn't exist
+    return "not_found"; // path doesn't exist
   }
+  if (stats.isDirectory()) {
+    return "directory";
+  }
+  if (stats.isFile() || stats.isSymbolicLink()) {
+    return "file";
+  }
+  throw new Error(`Unknown file type at path: ${path}`);
 }
 
-async function view(input: typeof ViewInputSchema.infer): Promise<string> {
-  if (await isDirectory(input.path)) {
-    if (input.view_range) {
-      return "Error: text editor view command on a directory does not support view_range";
-    }
-    const entries = await readdir(input.path);
-    let content = entries.join("\n");
-    if (input.max_characters) {
-      content = content.slice(0, input.max_characters);
-    }
-    return content;
+async function viewDirectory(input: ViewInput): Promise<string> {
+  if (input.view_range) {
+    return "Error: text editor view command on a directory does not support view_range";
   }
-
-  const file = Bun.file(input.path);
-  if (!(await file.exists())) {
-    return `File ${input.path} does not exist`;
+  const entries = await readdir(input.path);
+  let content = entries.join("\n");
+  if (input.max_characters) {
+    content = content.slice(0, input.max_characters);
   }
+  return content;
+}
 
-  // It is a file
+async function viewFile(input: ViewInput): Promise<string> {
   let content = await Bun.file(input.path).text();
   if (input.view_range) {
     const lines = content.split("\n");
@@ -59,6 +64,20 @@ async function view(input: typeof ViewInputSchema.infer): Promise<string> {
     content = content.slice(0, input.max_characters);
   }
   return content;
+}
+
+async function view(input: ViewInput): Promise<string> {
+  const type = await fileType(input.path);
+  switch (type) {
+    case "directory":
+      return await viewDirectory(input);
+    case "file":
+      return await viewFile(input);
+    case "not_found":
+      return `File ${input.path} does not exist`;
+    default:
+      throw new Error(`Unknown file type at path: ${input.path}`);
+  }
 }
 
 export const textEditor: ExtendedAnthropicTool = {
