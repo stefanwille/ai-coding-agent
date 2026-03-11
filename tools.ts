@@ -1,7 +1,7 @@
 import { type } from "arktype";
 import type { ToolResultBlockParam } from "@anthropic-ai/sdk/resources";
 import type Anthropic from "@anthropic-ai/sdk";
-import type { BashSession } from "./BashSession";
+import type { BashSession } from "./bash-session";
 
 export type ToolResult = ToolResultBlockParam["content"];
 
