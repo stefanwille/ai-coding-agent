@@ -10,9 +10,19 @@ export type AgentSession = {
   system?: string;
   tools: Tool[];
   anthropicTools: Anthropic.Messages.ToolUnion[];
-  maxTokens: number;
-  maxTurns: number;
   model: string;
+  /**
+   * The maximum number of tokens to generate in a single response.
+   */
+  maxTokens: number;
+  /**
+   * The maximum number of turns to allow the agent to take in a response to the user.
+   */
+  maxTurns: number;
+  /**
+   * The number of output tokens generated so far.
+   */
+  outputTokens: number;
 };
 
 const DEFAULT_MODEL = "claude-sonnet-4-6";
@@ -40,6 +50,7 @@ export async function createAgentSession(options?: {
     maxTokens,
     maxTurns,
     model,
+    outputTokens: 0,
   };
   return session;
 }
