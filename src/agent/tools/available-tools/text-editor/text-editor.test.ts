@@ -115,6 +115,86 @@ describe("textEditor - str_replace", () => {
   });
 });
 
+describe("textEditor - create", () => {
+  const TMP_CREATE_FILE = "/tmp/text-editor-create-test.txt";
+  const TMP_CREATE_DIR = "/tmp/text-editor-create-test-dir";
+  const TMP_CREATE_NESTED = "/tmp/text-editor-create-nested/sub/file.txt";
+
+  afterEach(async () => {
+    await unlink(TMP_CREATE_FILE).catch(() => {});
+    await unlink(TMP_CREATE_NESTED).catch(() => {});
+    await rmdir("/tmp/text-editor-create-nested/sub").catch(() => {});
+    await rmdir("/tmp/text-editor-create-nested").catch(() => {});
+    await rmdir(TMP_CREATE_DIR).catch(() => {});
+  });
+
+  it("creates a file with given content", async () => {
+    const result = await textEditor.run({
+      command: "create",
+      path: TMP_CREATE_FILE,
+      file_text: "hello create\n",
+    });
+    expect(result).toBe("Success");
+
+    const content = await Bun.file(TMP_CREATE_FILE).text();
+    expect(content).toBe("hello create\n");
+  });
+
+  it("creates a file with empty content", async () => {
+    const result = await textEditor.run({
+      command: "create",
+      path: TMP_CREATE_FILE,
+      file_text: "",
+    });
+    expect(result).toBe("Success");
+
+    const content = await Bun.file(TMP_CREATE_FILE).text();
+    expect(content).toBe("");
+  });
+
+  it("creates parent directories if they do not exist", async () => {
+    const result = await textEditor.run({
+      command: "create",
+      path: TMP_CREATE_NESTED,
+      file_text: "nested\n",
+    });
+    expect(result).toBe("Success");
+
+    const content = await Bun.file(TMP_CREATE_NESTED).text();
+    expect(content).toBe("nested\n");
+  });
+
+  it("returns error when file already exists", async () => {
+    await Bun.write(TMP_CREATE_FILE, "existing\n");
+    const result = await textEditor.run({
+      command: "create",
+      path: TMP_CREATE_FILE,
+      file_text: "new content\n",
+    });
+    expect(result).toContain("already exists");
+  });
+
+  it("returns error when path is a directory", async () => {
+    await mkdir(TMP_CREATE_DIR, { recursive: true });
+    const result = await textEditor.run({
+      command: "create",
+      path: TMP_CREATE_DIR,
+      file_text: "content\n",
+    });
+    expect(result).toContain("directory");
+  });
+
+  it("returns Invalid input when file_text is missing", async () => {
+    const spy = spyOn(console, "error").mockImplementation(() => {});
+    const result = await textEditor.run({
+      command: "create",
+      path: TMP_CREATE_FILE,
+    });
+    spy.mockRestore();
+    expect(result).toContain("Error: Invalid input");
+  });
+});
+
 describe("textEditor - input validation", () => {
   it("returns error when command is missing", async () => {
     const result = await textEditor.run({});

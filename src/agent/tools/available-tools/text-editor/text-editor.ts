@@ -1,11 +1,14 @@
 import { type } from "arktype";
 import type { ExtendedAnthropicTool, ToolResult } from "../../tool";
+import { create, CreateInputSchema } from "./_create";
 import { strReplace, StrReplaceInputSchema } from "./_str_replace";
 import { view, ViewInputSchema } from "./_view";
 
 // https://platform.claude.com/docs/en/agents-and-tools/tool-use/text-editor-tool
 
-const TextEditorInputSchema = ViewInputSchema.or(StrReplaceInputSchema);
+const TextEditorInputSchema = ViewInputSchema.or(StrReplaceInputSchema).or(
+  CreateInputSchema,
+);
 
 // oxlint-disable-next-line typescript-eslint/no-explicit-any
 type Command = (input: any) => Promise<ToolResult>;
@@ -13,6 +16,7 @@ type Command = (input: any) => Promise<ToolResult>;
 const CommandMapping: Record<string, Command> = {
   view: view,
   str_replace: strReplace,
+  create: create,
 };
 
 export const textEditor: ExtendedAnthropicTool = {
