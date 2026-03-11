@@ -15,7 +15,7 @@ export type Tool = {
 const get_location: Tool = {
   name: "get_location",
   description: "Get the user's location",
-  inputSchema: type({}),
+  inputSchema: type({ "+": "reject" }),
   run: async () => {
     console.log("Getting location");
     return "Berlin, Germany";
@@ -23,6 +23,7 @@ const get_location: Tool = {
 };
 
 const getWeatherSchema = type({
+  "+": "reject",
   location: "string",
 });
 
@@ -72,10 +73,11 @@ export function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
         name: tool.name,
       };
     }
+    const inputSchema = tool.inputSchema?.toJsonSchema();
     return {
       name: tool.name,
       description: tool.description,
-      input_schema: tool.inputSchema?.toJsonSchema() as any,
+      input_schema: inputSchema as any,
       strict: true,
     };
   });

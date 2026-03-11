@@ -20,9 +20,9 @@ export type AgentSession = {
    */
   maxTurns: number;
   /**
-   * The number of output tokens generated so far.
+   * Output tokens generated so far.
    */
-  outputTokens: number;
+  tokens: number;
 };
 
 const DEFAULT_MODEL = "claude-sonnet-4-6";
@@ -50,7 +50,7 @@ export async function createAgentSession(options?: {
     maxTokens,
     maxTurns,
     model,
-    outputTokens: 0,
+    tokens: 0,
   };
   return session;
 }

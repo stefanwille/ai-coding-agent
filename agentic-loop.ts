@@ -37,7 +37,7 @@ async function executeToolUse(
 }
 
 async function agentRequest(request: string, session: AgentSession) {
-  let outputTokensInAgentRequest = 0;
+  let agentRequestTokens = 0;
   try {
     session.messages.push({
       role: "user",
@@ -66,8 +66,8 @@ async function agentRequest(request: string, session: AgentSession) {
         return;
       }
       session.messages.push({ role: response.role, content: response.content });
-      outputTokensInAgentRequest += response.usage?.output_tokens ?? 0;
-      session.outputTokens += response.usage?.output_tokens ?? 0;
+      agentRequestTokens += response.usage?.output_tokens ?? 0;
+      session.tokens += response.usage?.output_tokens ?? 0;
 
       for (const block of response.content) {
         if (block.type === "text") {
@@ -128,9 +128,11 @@ async function agentRequest(request: string, session: AgentSession) {
         content: [{ type: "text", text: "Request interrupted." }],
       });
     }
-    console.log(
-      `Output tokens in agent request: ${outputTokensInAgentRequest} (total: ${session.outputTokens})`,
-    );
+    if (agentRequestTokens > session.maxTokens * 0.8) {
+      console.log(
+        "Warning: Output tokens in agent request was greater than 80% of the max tokens",
+      );
+    }
   }
 }
 
