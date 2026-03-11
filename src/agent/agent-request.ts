@@ -37,12 +37,12 @@ async function executeToolUse(
   };
 }
 
-export async function agentRequest(request: string, session: AgentSession) {
+export async function agentRequest(input: string, session: AgentSession) {
   let agentRequestTokens = 0;
   try {
     session.messages.push({
       role: "user",
-      content: request,
+      content: input,
     });
 
     let turns;

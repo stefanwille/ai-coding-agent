@@ -13,37 +13,9 @@ export function createReadlineSession(history: string[]): ReadlineSession {
     history,
   });
 
-  // Lines are buffered eagerly as they arrive; null signals EOF.
-  const bufferedLines: Array<string | null> = [];
-  let pendingResolve: ((line: string | null) => void) | null = null;
-
-  readline.on("line", (line) => {
-    if (pendingResolve) {
-      pendingResolve(line);
-      pendingResolve = null;
-    } else {
-      bufferedLines.push(line);
-    }
-  });
-
-  readline.once("close", () => {
-    if (pendingResolve) {
-      pendingResolve(null);
-      pendingResolve = null;
-    } else {
-      bufferedLines.push(null);
-    }
-  });
-
-  function promptUser(prompt: string): Promise<string | null> {
-    if (bufferedLines.length > 0) {
-      return Promise.resolve(bufferedLines.shift()!);
-    }
-    return new Promise((resolve) => {
-      pendingResolve = resolve;
-    });
+  async function promptUser(prompt: string): Promise<string | null> {
+    return await readline.question(prompt);
   }
-
   function getHistory() {
     return (readline as any).history as string[];
   }
