@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach, spyOn } from "bun:test";
 import { unlink, mkdir, rmdir } from "node:fs/promises";
 import { textEditor } from "./text-editor";
 
@@ -135,7 +135,9 @@ describe("textEditor - input validation", () => {
   });
 
   it("returns Invalid input for a known command with bad arguments", async () => {
-    const result = await textEditor.run({ command: "view" }); // missing path
+    const spy = spyOn(console, "error").mockImplementation(() => {});
+    const result = await textEditor.run({ command: "view" });
+    spy.mockRestore();
     expect(result).toContain("Error: Invalid input");
   });
 });
