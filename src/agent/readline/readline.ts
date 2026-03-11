@@ -25,6 +25,7 @@ export function createReadlineSession(history: string[]): ReadlineSession {
   }
 
   function getHistory() {
+    // oxlint-disable-next-line typescript-eslint/no-explicit-any
     return (readline as any).history as string[];
   }
 

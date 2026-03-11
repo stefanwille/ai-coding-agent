@@ -36,6 +36,7 @@ async function runAgent(userPrompt: string) {
       let result: string;
       try {
         console.log("Tool use", block);
+        // oxlint-disable-next-line typescript-eslint/no-explicit-any
         if ((block.input as any).restart) {
           session.restart();
           result = "Bash session restarted.";

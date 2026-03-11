@@ -9,6 +9,7 @@ export type Tool = {
   name: string;
   description: string;
   inputSchema?: type.Any;
+  // oxlint-disable-next-line typescript-eslint/no-explicit-any
   run: (input: any) => Promise<ToolResult>;
 };
 
@@ -77,6 +78,7 @@ export function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
     return {
       name: tool.name,
       description: tool.description,
+      // oxlint-disable-next-line typescript-eslint/no-explicit-any
       input_schema: inputSchema as any,
       strict: true,
     };
