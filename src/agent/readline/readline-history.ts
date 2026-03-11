@@ -14,7 +14,7 @@ export async function loadReadlineHistory(): Promise<string[]> {
         .split("\n")
         .filter(Boolean)
         .slice(-MAX_HISTORY_LINES)
-        .reverse();
+        .toReversed();
     }
   } catch {}
   return [];
