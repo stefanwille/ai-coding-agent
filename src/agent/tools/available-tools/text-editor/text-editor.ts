@@ -1,10 +1,11 @@
 import { type } from "arktype";
 import type { ExtendedAnthropicTool } from "../../tool";
+import { strReplace, StrReplaceInputSchema } from "./_str_replace";
 import { view, ViewInputSchema } from "./_view";
 
 // https://platform.claude.com/docs/en/agents-and-tools/tool-use/text-editor-tool
 
-const TextEditorInputSchema = ViewInputSchema;
+const TextEditorInputSchema = ViewInputSchema.or(StrReplaceInputSchema);
 
 export const textEditor: ExtendedAnthropicTool = {
   type: "text_editor_20250728",
@@ -22,6 +23,8 @@ export const textEditor: ExtendedAnthropicTool = {
     switch (parsedInput.command) {
       case "view":
         return await view(parsedInput);
+      case "str_replace":
+        return await strReplace(parsedInput);
       default:
         return "Text editor tool called";
     }
