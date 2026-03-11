@@ -18,7 +18,18 @@ const ViewInputSchema = type({
 const TextEditorInputSchema = ViewInputSchema;
 
 async function view(input: typeof ViewInputSchema.infer) {
-  const content = await Bun.file(input.path).text();
+  let content = await Bun.file(input.path).text();
+  if (input.view_range) {
+    const lines = content.split("\n");
+    const start = input.view_range[0] - 1;
+    const end = input.view_range[1] === -1 ? undefined : input.view_range[1];
+    const slicedLines = lines.slice(start, end);
+    content = slicedLines.join("\n");
+  }
+
+  if (input.max_characters) {
+    content = content.slice(0, input.max_characters);
+  }
   return content;
 }
 
