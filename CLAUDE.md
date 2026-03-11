@@ -9,13 +9,13 @@ An interactive AI agent built on the Anthropic Claude API with Bun/TypeScript. T
 It can also execute a request piped into the CLI:
 
 ```
-echo "what is 1+2" | bun run src/main.ts
+echo "what is 1+2" | bun start
 ```
 
 ## Commands
 
 ```bash
-bun src/main.ts                # Run the interactive agent
+bun start                      # Run the agent
 bun test                       # Run all tests
 bun test render-markdown       # Run tests matching a name
 bun run format                 # Format with oxfmt
@@ -25,6 +25,7 @@ bun run typecheck              # Type-check without emitting
 
 ## Validation Commands
 
+- echo "What is 1+2" | bun start
 - bun run format
 - bun run lint
 - bun run typecheck
