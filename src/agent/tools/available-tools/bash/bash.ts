@@ -1,4 +1,4 @@
-import type { ExtendedAnthropicTool } from "../tool";
+import type { ExtendedAnthropicTool } from "../../tool";
 import type { BashSession } from "./bash-session";
 
 type BashToolInput =

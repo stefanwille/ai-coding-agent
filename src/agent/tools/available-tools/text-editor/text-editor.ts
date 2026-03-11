@@ -7,7 +7,7 @@ import { view, ViewInputSchema } from "./_view";
 
 const TextEditorInputSchema = ViewInputSchema.or(StrReplaceInputSchema);
 
-// oxlint-disable-line typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript-eslint/no-explicit-any
 type Command = (input: any) => Promise<ToolResult>;
 
 const CommandMapping: Record<string, Command> = {
