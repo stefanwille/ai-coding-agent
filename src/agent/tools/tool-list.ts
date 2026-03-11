@@ -2,7 +2,7 @@ import { bash } from "./available-tools/bash";
 import type { BashSession } from "./available-tools/bash-session";
 import { get_location } from "./available-tools/get-location";
 import { get_weather } from "./available-tools/get-weather";
-import { textEditor } from "./available-tools/text-editor";
+import { textEditor } from "./available-tools/text-editor/text-editor";
 import { isAIAgentTool, type AnthropicTool, type Tool } from "./tool";
 
 export function createTools(bashSession: BashSession): Tool[] {

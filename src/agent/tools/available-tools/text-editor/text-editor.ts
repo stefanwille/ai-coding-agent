@@ -1,6 +1,6 @@
 import { type } from "arktype";
-import type { ExtendedAnthropicTool } from "../tool";
-import { view, ViewInputSchema } from "./view";
+import type { ExtendedAnthropicTool } from "../../tool";
+import { view, ViewInputSchema } from "./_view";
 
 // https://platform.claude.com/docs/en/agents-and-tools/tool-use/text-editor-tool
 
