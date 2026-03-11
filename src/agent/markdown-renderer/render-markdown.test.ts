@@ -1,5 +1,9 @@
 import { describe, it, expect } from "bun:test";
-import { renderMarkdown, formatInline, renderToolFrame } from "./render-markdown";
+import {
+  renderMarkdown,
+  formatInline,
+  renderToolFrame,
+} from "./render-markdown";
 
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
@@ -15,15 +19,11 @@ const GRAY = "\x1b[90m";
 
 describe("formatInline", () => {
   it("renders bold", () => {
-    expect(formatInline("hello **world**")).toBe(
-      `hello ${BOLD}world${RESET}`,
-    );
+    expect(formatInline("hello **world**")).toBe(`hello ${BOLD}world${RESET}`);
   });
 
   it("renders italic", () => {
-    expect(formatInline("hello *world*")).toBe(
-      `hello ${ITALIC}world${RESET}`,
-    );
+    expect(formatInline("hello *world*")).toBe(`hello ${ITALIC}world${RESET}`);
   });
 
   it("renders bold+italic", () => {
@@ -44,9 +44,7 @@ describe("formatInline", () => {
   });
 
   it("renders strikethrough", () => {
-    expect(formatInline("~~removed~~")).toBe(
-      `${STRIKETHROUGH}removed${RESET}`,
-    );
+    expect(formatInline("~~removed~~")).toBe(`${STRIKETHROUGH}removed${RESET}`);
   });
 
   it("renders links", () => {
@@ -76,15 +74,11 @@ describe("renderMarkdown", () => {
     });
 
     it("renders h2", () => {
-      expect(renderMarkdown("## Hello")).toBe(
-        `${BOLD}${CYAN}Hello${RESET}`,
-      );
+      expect(renderMarkdown("## Hello")).toBe(`${BOLD}${CYAN}Hello${RESET}`);
     });
 
     it("renders h3", () => {
-      expect(renderMarkdown("### Hello")).toBe(
-        `${BOLD}${YELLOW}Hello${RESET}`,
-      );
+      expect(renderMarkdown("### Hello")).toBe(`${BOLD}${YELLOW}Hello${RESET}`);
     });
   });
 
@@ -186,8 +180,7 @@ describe("renderMarkdown", () => {
     });
 
     it("renders table with multiple body rows", () => {
-      const input =
-        "| A | B |\n|---|---|\n| 1 | 2 |\n| 3 | 4 |";
+      const input = "| A | B |\n|---|---|\n| 1 | 2 |\n| 3 | 4 |";
       const result = renderMarkdown(input);
       const lines = result.split("\n");
       // top border, header, separator, row1, row2, bottom border
@@ -254,7 +247,11 @@ describe("renderToolFrame", () => {
   });
 
   it("renders object input as JSON", () => {
-    const result = renderToolFrame("bash", { command: "ls", timeout: 5000 }, "out");
+    const result = renderToolFrame(
+      "bash",
+      { command: "ls", timeout: 5000 },
+      "out",
+    );
     expect(result).toContain('"command": "ls"');
     expect(result).toContain('"timeout": 5000');
   });

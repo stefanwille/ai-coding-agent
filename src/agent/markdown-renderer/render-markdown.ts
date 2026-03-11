@@ -26,7 +26,10 @@ export function formatInline(text: string): string {
   text = text.replace(/\*\*(.+?)\*\*/g, `${BOLD}$1${RESET}`);
 
   // 4. Italic (single * not preceded/followed by *)
-  text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, `${ITALIC}$1${RESET}`);
+  text = text.replace(
+    /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g,
+    `${ITALIC}$1${RESET}`,
+  );
 
   // 5. Strikethrough
   text = text.replace(/~~(.+?)~~/g, `${STRIKETHROUGH}$1${RESET}`);
@@ -92,9 +95,15 @@ function renderTable(tableLines: string[]): string {
       return isHeader ? `${BOLD}${padded}${RESET}` : formatInline(padded);
     });
     output.push(
-      DIM + "│" + RESET + " " +
-      cells.join(` ${DIM}│${RESET} `) +
-      " " + DIM + "│" + RESET,
+      DIM +
+        "│" +
+        RESET +
+        " " +
+        cells.join(` ${DIM}│${RESET} `) +
+        " " +
+        DIM +
+        "│" +
+        RESET,
     );
 
     if (r === headerIndex) {
@@ -141,9 +150,7 @@ export function renderToolFrame(
   const resultLines = result.split("\n");
   const maxLines = 20;
   const truncated = resultLines.length > maxLines;
-  const displayLines = truncated
-    ? resultLines.slice(0, maxLines)
-    : resultLines;
+  const displayLines = truncated ? resultLines.slice(0, maxLines) : resultLines;
   for (const line of displayLines) {
     output.push(DIM + "│ " + RESET + line);
   }
@@ -231,9 +238,7 @@ export function renderMarkdown(markdown: string): string {
     // Blockquote
     const quoteMatch = line.match(/^>\s?(.*)/);
     if (quoteMatch) {
-      output.push(
-        DIM + "│ " + ITALIC + formatInline(quoteMatch[1]!) + RESET,
-      );
+      output.push(DIM + "│ " + ITALIC + formatInline(quoteMatch[1]!) + RESET);
       continue;
     }
 
@@ -252,9 +257,7 @@ export function renderMarkdown(markdown: string): string {
     if (numMatch) {
       const depth = nestDepth(numMatch[1]!);
       const indent = "  ".repeat(depth);
-      output.push(
-        `${indent}  ${numMatch[2]}. ${formatInline(numMatch[3]!)}`,
-      );
+      output.push(`${indent}  ${numMatch[2]}. ${formatInline(numMatch[3]!)}`);
       continue;
     }
 

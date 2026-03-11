@@ -25,6 +25,8 @@ bun run typecheck              # Type-check without emitting
 
 ## Validation Commands
 
+Run these commands to verify the project is clean state.
+
 - echo "What is 1+2" | bun start
 - bun run format
 - bun run lint
