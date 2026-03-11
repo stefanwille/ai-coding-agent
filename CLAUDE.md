@@ -13,13 +13,15 @@ bun src/main.ts               # Run the interactive agent
 bun test                       # Run all tests
 bun test render-markdown       # Run tests matching a name
 bun run format                 # Format with oxfmt
+bun run lint                   # Lint with eslint
 bun run typecheck              # Type-check without emitting
 ```
 
 ## Validation Commands
 
-- bun format
-- bun typecheck
+- bun run format
+- bun run lint
+- bun run typecheck
 - bun test
 
 ## Architecture
