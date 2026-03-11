@@ -3,8 +3,8 @@ import { agentRequest } from "./agent/agent-request";
 import {
   loadReadlineHistory,
   saveReadlineHistory,
-} from "./readline/readline-history";
-import { createReadlineSession } from "./readline/readline";
+} from "./agent/readline/readline-history";
+import { createReadlineSession } from "./agent/readline/readline";
 
 async function main() {
   const history = await loadReadlineHistory();

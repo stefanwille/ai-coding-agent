@@ -9,7 +9,7 @@ export function createReadlineSession(history: string[]): ReadlineSession {
   const readline = createInterface({
     input: process.stdin,
     output: process.stdout,
-    terminal: true,
+    terminal: process.stdin.isTTY ?? false,
     history,
   });
 

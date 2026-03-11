@@ -3,6 +3,9 @@ import { BashSession } from "./tools/bash-session";
 import { loadSystemPrompt } from "./system-prompt";
 import { convertTools, createTools, type Tool } from "./tools/tools";
 
+/**
+ * Agent session models the session the user has with the agent.
+ */
 export type AgentSession = {
   anthropicAPI: Anthropic;
   messages: Anthropic.Messages.MessageParam[];
