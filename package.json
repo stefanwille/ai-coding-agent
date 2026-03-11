@@ -1,5 +1,6 @@
 {
-  "name": "agentic-loop",
+  "name": "ai-coding-agent",
+  "description": "A terminal-based AI coding agent built from scratch with the Anthropic Claude API, Bun, and TypeScript",
   "module": "index.ts",
   "type": "module",
   "private": true,
