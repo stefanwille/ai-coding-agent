@@ -27,11 +27,11 @@ bun run typecheck              # Type-check without emitting
 
 Run these commands to verify the project is clean state.
 
-- echo "What is 1+2" | bun start
 - bun run format
 - bun run lint
 - bun run typecheck
 - bun test
+- echo "What is 1+2" | bun start
 
 ## Architecture
 
