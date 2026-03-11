@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { createInterface } from "node:readline";
 import { createAgentSession, type AgentSession } from "./agent-session";
+import { createReadlineSession } from "./readline";
 import { loadHistory, saveHistory } from "./history";
 import { renderMarkdown, renderToolFrame } from "./render-markdown";
 import { type ToolResult } from "./tools";
@@ -130,54 +130,19 @@ async function agentRequest(request: string, session: AgentSession) {
   }
 }
 
-function createREPL(history: string[]): {
-  promptUser: (prompt: string) => Promise<string | null>;
-  getHistory: () => string[];
-} {
-  const readline = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    terminal: true,
-    history,
-  });
-
-  let closed = false;
-  readline.once("close", () => {
-    closed = true;
-  });
-
-  function promptUser(prompt: string) {
-    return new Promise<string | null>((resolve) => {
-      if (closed) return resolve(null);
-      const onClose = () => resolve(null);
-      readline.once("close", onClose);
-      readline.question(prompt, (answer) => {
-        readline.removeListener("close", onClose);
-        resolve(answer);
-      });
-    });
-  }
-
-  function getHistory() {
-    return (readline as any).history as string[];
-  }
-
-  return { promptUser, getHistory };
-}
-
 async function main() {
   const history = await loadHistory();
-  const session = await createAgentSession();
-  const { promptUser, getHistory } = createREPL(history);
+  const agentSession = await createAgentSession();
+  const readlineSession = createReadlineSession(history);
 
   for (;;) {
-    const line = await promptUser("> ");
+    const line = await readlineSession.promptUser("> ");
     if (line === null) {
       break;
     }
     if (!line) continue;
-    await saveHistory(getHistory());
-    await agentRequest(line, session);
+    await saveHistory(readlineSession.getHistory());
+    await agentRequest(line, agentSession);
   }
 
   process.exit(0);
