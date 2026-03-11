@@ -1,9 +1,10 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import Anthropic from "@anthropic-ai/sdk";
 import { BashSession } from "./BashSession";
 import { loadSystemPrompt } from "./system-prompt";
 import { convertTools, createTools, type Tool } from "./tools";
 
 export type AgentSession = {
+  anthropicAPI: Anthropic;
   messages: Anthropic.Messages.MessageParam[];
   // System prompt
   system?: string;
@@ -26,10 +27,12 @@ export async function createAgentSession(options?: {
     maxTokens = 8192,
     maxTurns = 20,
   } = options ?? {};
+  const anthropicAPI = new Anthropic();
   const tools = createTools(new BashSession());
   const anthropicTools = convertTools(tools);
   const system = await loadSystemPrompt();
   const session: AgentSession = {
+    anthropicAPI,
     messages: [],
     system,
     tools,

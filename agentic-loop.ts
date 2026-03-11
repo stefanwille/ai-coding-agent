@@ -5,8 +5,6 @@ import { loadHistory, saveHistory } from "./history";
 import { renderMarkdown, renderToolFrame } from "./render-markdown";
 import { type ToolResult } from "./tools";
 
-const anthropic = new Anthropic();
-
 async function executeToolUse(
   toolUse: Anthropic.Messages.ToolUseBlockParam,
   session: AgentSession,
@@ -49,7 +47,7 @@ async function agentRequest(request: string, session: AgentSession) {
     for (turns = 0; turns < session.maxTurns; turns++) {
       let response: Anthropic.Messages.Message;
       try {
-        response = await anthropic.messages.create({
+        response = await session.anthropicAPI.messages.create({
           model: session.model,
           max_tokens: session.maxTokens,
           system: session.system || undefined,
