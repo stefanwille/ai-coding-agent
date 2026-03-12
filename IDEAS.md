@@ -1,4 +1,3 @@
-- When in plan mode, the agent should switch to agent mode when asked to implement the plan.
 - guardrails - bash
 - evaluations - against live API - which tool?
 - progress indicator - activity-gerunds.txt
