@@ -36,17 +36,22 @@ Run these commands to verify the project is in clean state.
 
 ## Architecture
 
-`src/main.ts` — Entry point. Creates readline and agent sessions, runs the REPL loop.
+`src/main.ts` — Entry point. Detects TTY for REPL vs batch mode. Creates readline and agent sessions, runs the REPL loop.
 
 `src/agent/agent-session.ts` — `AgentSession` type holds all session state: Anthropic client, message history, tools, model config, token counter. `createAgentSession()` wires everything together.
 
-`src/agent/agent-request.ts` — `agentRequest()` sends messages to Claude, processes tool calls in a loop (max turns configurable, default 20). Tool calls within a turn run sequentially. Handles all stop reasons. Ensures messages alternate user/assistant for API compliance.
+`src/agent/agentic-loop.ts` — `agentRequest()` sends messages to Claude, processes tool calls in a loop (max turns configurable, default 20). Tool calls within a turn run sequentially. Handles all stop reasons. Ensures messages alternate user/assistant for API compliance.
 
-`src/agent/tools/tools.ts` — Tool definitions using arktype for input schemas. Each `Tool` has `name`, `description`, `inputSchema` (arktype), and `run`. `convertTools()` converts to Anthropic API format. The bash tool uses the special `bash_20250124` tool type.
+`src/agent/tools/tool.ts` — Two tool types: `AIAgentTool` (custom tools with arktype input schemas) and `ExtendedAnthropicTool` (Anthropic-native tools like bash). Both expose a `run` function.
 
-`src/agent/tools/bash-session.ts` — Persistent bash process. Writes command + sentinel marker, polls stdout for sentinel. 120s timeout, 30KB output limit.
+`src/agent/tools/tool-list.ts` — `createTools()` assembles the tool list, `convertTools()` converts to Anthropic API format.
 
-`src/agent/system-prompt.ts` — Loads `~/.claude/CLAUDE.md` and `./CLAUDE.md`, concatenates them as system prompt.
+`src/agent/tools/available-tools/` — Individual tool implementations:
+- `bash/` — Persistent bash process via `BashSession`. Uses `bash_20250124` Anthropic tool type. Sentinel-based output capture, 120s timeout, 30KB output limit.
+- `text-editor/` — File operations (`_view.ts`, `_str_replace.ts`, `_create.ts`). Uses `text_editor_20250124` Anthropic tool type.
+- `get-weather.ts`, `get-location.ts` — Example custom tools.
+
+`src/agent/system-prompt/system-prompt.ts` — Loads `SYSTEM_PROMPT.md`, `~/.claude/CLAUDE.md`, and `./CLAUDE.md`, concatenates them as system prompt.
 
 `src/agent/markdown-renderer/render-markdown.ts` — Terminal markdown renderer using ANSI codes. `renderToolFrame()` draws bordered boxes around tool I/O.
 
