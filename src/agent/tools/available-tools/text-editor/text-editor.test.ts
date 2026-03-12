@@ -195,6 +195,76 @@ describe("textEditor - create", () => {
   });
 });
 
+describe("textEditor - insert", () => {
+  beforeEach(async () => {
+    await Bun.write(TMP_FILE, "line one\nline two\nline three\n");
+  });
+
+  afterEach(async () => {
+    await unlink(TMP_FILE).catch(() => {});
+  });
+
+  it("inserts text after a middle line", async () => {
+    const result = await textEditor.run({
+      command: "insert",
+      path: TMP_FILE,
+      insert_line: 1,
+      insert_text: "line inserted",
+    });
+    expect(result).toBe("Success");
+
+    const content = await Bun.file(TMP_FILE).text();
+    expect(content).toBe("line one\nline inserted\nline two\nline three\n");
+  });
+
+  it("inserts text after the last line", async () => {
+    const result = await textEditor.run({
+      command: "insert",
+      path: TMP_FILE,
+      insert_line: 3,
+      insert_text: "line four",
+    });
+    expect(result).toBe("Success");
+
+    const content = await Bun.file(TMP_FILE).text();
+    expect(content).toBe("line one\nline two\nline three\nline four\n");
+  });
+
+  it("prepends text when insert_line is 0", async () => {
+    const result = await textEditor.run({
+      command: "insert",
+      path: TMP_FILE,
+      insert_line: 0,
+      insert_text: "line zero",
+    });
+    expect(result).toBe("Success");
+
+    const content = await Bun.file(TMP_FILE).text();
+    expect(content).toBe("line zero\nline one\nline two\nline three\n");
+  });
+
+  it("returns error when file does not exist", async () => {
+    const result = await textEditor.run({
+      command: "insert",
+      path: "/tmp/no-such-file-insert.txt",
+      insert_line: 1,
+      insert_text: "hello",
+    });
+    expect(result).toContain("does not exist");
+  });
+
+  it("returns Invalid input when insert_text is missing", async () => {
+    const spy = spyOn(console, "error").mockImplementation(() => {});
+    const result = await textEditor.run({
+      command: "insert",
+      path: TMP_FILE,
+      insert_line: 1,
+    });
+    spy.mockRestore();
+    expect(result).toContain("Error: Invalid input");
+  });
+});
+
 describe("textEditor - input validation", () => {
   it("returns error when command is missing", async () => {
     const result = await textEditor.run({});
