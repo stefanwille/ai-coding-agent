@@ -30,6 +30,7 @@ async function repl() {
         "/plan - Plan mode. Agent will only read and plan, not edit.",
       );
       console.log("/agent - Agent mode. Agent can read, write, and execute.");
+      console.log("/exit - Exit the coding agent.");
       continue;
     }
     if (input === "/plan") {
