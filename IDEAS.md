@@ -7,3 +7,4 @@
 - /clear
 - /init
 - Task tool
+- Better text editor error handling - https://platform.claude.com/docs/en/agents-and-tools/tool-use/text-editor-tool#handle-errors - "is_error": true
