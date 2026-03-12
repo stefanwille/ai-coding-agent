@@ -42,18 +42,21 @@ export async function createAgentSession(options?: {
     maxTurns = 20,
   } = options ?? {};
   const anthropicAPI = new Anthropic();
-  const tools = createTools(new BashSession());
-  const anthropicTools = convertTools(tools);
   const session: AgentSession = {
     anthropicAPI,
     messages: [],
     mode: "agent",
-    tools,
-    anthropicTools,
+    tools: [],
+    anthropicTools: [],
     maxTokens,
     maxTurns,
     model,
     tokens: 0,
   };
+  const tools = createTools(new BashSession(), (mode) => {
+    session.mode = mode;
+  });
+  session.tools = tools;
+  session.anthropicTools = convertTools(tools);
   return session;
 }

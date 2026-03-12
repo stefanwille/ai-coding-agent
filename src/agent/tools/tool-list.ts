@@ -1,8 +1,10 @@
 import { bash } from "./available-tools/bash/bash";
 import type { BashSession } from "./available-tools/bash/bash-session";
+import { exitPlanMode } from "./available-tools/exit-plan-mode";
 import { get_location } from "./available-tools/get-location";
 import { get_weather } from "./available-tools/get-weather";
 import { textEditor } from "./available-tools/text-editor/text-editor";
+import type { Mode } from "../agent-session";
 import {
   isAIAgentTool,
   type AnthropicTool,
@@ -17,8 +19,17 @@ function toAnthropicTool({
   return tool as AnthropicTool;
 }
 
-export function createTools(bashSession: BashSession): Tool[] {
-  return [get_location, get_weather, bash(bashSession), textEditor];
+export function createTools(
+  bashSession: BashSession,
+  setMode: (mode: Mode) => void,
+): Tool[] {
+  return [
+    get_location,
+    get_weather,
+    bash(bashSession),
+    textEditor,
+    exitPlanMode(setMode),
+  ];
 }
 
 export function convertTools(tools: Tool[]): AnthropicTool[] {

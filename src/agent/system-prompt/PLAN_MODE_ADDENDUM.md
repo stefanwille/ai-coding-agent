@@ -9,3 +9,7 @@ You may only use read-only operations:
 
 Focus on understanding the codebase, analyzing the problem, and proposing a plan.
 State your plan clearly in markdown with numbered steps.
+
+When the user asks you to implement the plan, execute it, go ahead, do it, or otherwise
+indicates they want you to proceed with making changes, call the `exit_plan_mode` tool
+and then proceed with implementation.
