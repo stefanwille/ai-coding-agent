@@ -1,10 +1,12 @@
+- evaluations
 - guardrails - bash
-- evaluations - against live API - which tool?
 - progress indicator - activity-gerunds.txt
 - prompt caching
 - /clear
 - /init
 - Task tool
+
+Review Feedback:
 
 - Better text editor error handling - https://platform.claude.com/docs/en/agents-and-tools/tool-use/text-editor-tool#handle-errors - "is_error": true 2. Bug: content field type mismatch (agent-request.ts:44)
   ToolResult can be a string | ContentBlock[], but Anthropic.Messages.ToolResultBlockParam.content expects string | ContentBlockParam[]. If tool.run() returns
