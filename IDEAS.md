@@ -8,6 +8,9 @@
 - /clear
 - /init
 - Task tool
+- /context - show how much context is left
+- /cost - show how much context is left, and how many output tokens where consumed, and an estimate of the cost.
+- Organize slash command in a lookup table, including descriptions, for easy /help generation and dispatching
 
 Review Feedback:
 
